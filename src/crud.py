@@ -3,7 +3,6 @@ from sqlalchemy import select, update, delete, func
 from . database import schemas, models
 from . import utility
 
-
 # user
 
 def create_user(db: Session, user: schemas.UserCreate):
@@ -29,6 +28,7 @@ def get_user_by_login(db: Session, login: str):
   user = select(models.User).where(models.User.login == login)
   return db.scalar(user)
 
+#rooms
 
 def create_room(db: Session, room: schemas.RoomCreate):
   new_room = models.Room(name=room.name, description=room.description)
@@ -46,12 +46,11 @@ def get_room_by_name(db: Session, name: str):
 
 # booking
 
-def create_booking(db: Session, booking: schemas.BookingCreate, user_id):
-  room_id = 1
+def create_booking(db: Session, booking: schemas.BookingCreate, user_id, room_id):
   new_booking = models.Booking(booking_date=booking.booking_date, slot=booking.slot, user_id=user_id, room_id=room_id)
   db.add(new_booking)
   db.commit()
-  return schemas.BookingBase(booking_date=new_booking.booking_date, slot=new_booking.slot)
+  return schemas.BookingBase(booking_date=new_booking.booking_date, room=booking.room, slot=new_booking.slot)
 
 def get_bookings(db: Session):
   bookings = select(models.Booking)

@@ -11,11 +11,11 @@ class User(Base):
   login: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
   hashed_password: Mapped[str] = mapped_column(String, nullable=False)
   admin: Mapped[bool] = mapped_column(Boolean, default=False)
-  disabled: Mapped[bool] = mapped_column(Boolean, default=False)
+  # disabled: Mapped[bool] = mapped_column(Boolean, default=False)
   # articles: Mapped[List["Article"]] = relationship(back_populates="author", cascade="all, delete-orphan")
 
   def __repr__(self) -> str:
-    return f"User(user_id={self.user_id!r}, login={self.login!r}, password={self.password!r}, admin={self.admin!r}"
+    return f"User(user_id={self.user_id!r}, login={self.login!r}, hashed_password={self.hashed_password!r}, admin={self.admin!r}"
 
 class Room(Base):
   __tablename__= "room"

@@ -15,7 +15,7 @@ router = APIRouter()
 
 SECRET_KEY = "2c4404d4c97419990d6c9f47719f50e487ef04e13f202f646460e2ccea2db1a"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 3
+ACCESS_TOKEN_EXPIRE_MINUTES = 20
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -55,13 +55,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
   if user is None:
     raise credentials_exception
   return user
-
-async def get_current_active_user(
-    current_user: Annotated[schemas.UserBase, Depends(get_current_user)],
-):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
 
 async def verify_token(token: str = Depends(oauth2_scheme)):
   try:

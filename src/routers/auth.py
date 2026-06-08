@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import jwt
 from passlib.context import CryptContext
-from typing import Union, Annotated
+from typing import Union
 from datetime import datetime, timedelta, timezone
 from .. utility import verify_password
 from .. dependencies import get_db
@@ -81,7 +81,7 @@ async def login_for_access_token(
   if not user:
     raise HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
-      detail="Incorrect usename or password",
+      detail="Неверный логин или пароль",
       headers={"WWW-Authenticate": "Bearer"}
     )
   access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

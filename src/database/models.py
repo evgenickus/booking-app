@@ -1,8 +1,6 @@
-# from typing import List
 from datetime import datetime, date
 from sqlalchemy import ForeignKey, String, Boolean, Date, DateTime, func
-# from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from .database import Base, engine
 
 class User(Base):
@@ -11,8 +9,6 @@ class User(Base):
   login: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
   hashed_password: Mapped[str] = mapped_column(String, nullable=False)
   admin: Mapped[bool] = mapped_column(Boolean, default=False)
-  # disabled: Mapped[bool] = mapped_column(Boolean, default=False)
-  # articles: Mapped[List["Article"]] = relationship(back_populates="author", cascade="all, delete-orphan")
 
   def __repr__(self) -> str:
     return f"User(user_id={self.user_id!r}, login={self.login!r}, hashed_password={self.hashed_password!r}, admin={self.admin!r}"
@@ -44,19 +40,18 @@ class Booking(Base):
   slot: Mapped[str] = mapped_column(String(10))
   status: Mapped[str] = mapped_column(String(10), default='active')
 
-  # author: Mapped["User"] = relationship(back_populates="articles")
-
   def __repr__(self) -> str:
-    return f"""Booking(
-                booking_id={self.booking_id!r},
-                created_at={self.created_at!r},
-                updated_at={self.updated_at!r},
-                user_id={self.user_id!r},
-                room_id={self.room_id!r},
-                booking_date={self.booking_date!r},
-                slot={self.slot!r},
-                status={self.status!r}
-              )"""  
+    return f"""
+      Booking(
+        booking_id={self.booking_id!r},
+        created_at={self.created_at!r},
+        updated_at={self.updated_at!r},
+        user_id={self.user_id!r},
+        room_id={self.room_id!r},
+        booking_date={self.booking_date!r},
+        slot={self.slot!r},
+        status={self.status!r}
+      )"""
 
 
 Base.metadata.create_all(bind=engine)

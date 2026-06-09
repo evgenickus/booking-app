@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from typing import Union, List, Literal
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 class UserBase(BaseModel):
   login: str
@@ -12,6 +12,7 @@ class UserCreate(BaseModel):
   admin: Literal[False, True] = Field(..., description="Укажите является ли пользователь администратором")
   
   @field_validator('admin', mode='before')
+  @classmethod
   def coerce_admin(cls, v):
     if isinstance(v, str):
       if v.lower() == 'true':
@@ -29,13 +30,26 @@ class RoomCreate(RoomBase):
 
 class BookingBase(BaseModel):
   booking_date: date = Field(..., description="Укажите дату бронирования в формате YYYY-MM-DD")
-  room: Literal["Стандарт", "Премиум"] = Field(..., description="Выберите комнату для бронирования")
-  slot: Literal["10-13", "14-17", "18-21"] = Field(..., description="Выберите время бронирования")
+  room: Literal["Стандарт", "Премиум"] = Field(..., description="Выберите комнату")
+  slot: Literal["10-13", "14-17", "18-21"] = Field(..., description="Выберите слот")
   
   @field_validator("booking_date")
-  def validate_date_not_in_future(cls, v: date) -> date:
+  @classmethod
+  def validate_date_not_in_past(cls, v: date) -> date:
     if v < date.today():
       raise ValueError("Дата не может быть позже сегодняшнего дня")
+    return v
+
+  @field_validator("slot")
+  @classmethod
+  def validate_slot_not_in_past(cls, v: str, info: ValidationInfo) -> str:
+    booking_date = info.data.get("booking_date")
+    if booking_date is None:
+      return v
+    elif booking_date > date.today():
+      return v
+    if int(v[:2]) <= datetime.now().hour:
+      raise ValueError("Бронирование невозможно после начала слота")
     return v
 
 class BookingCreate(BookingBase):
@@ -49,16 +63,36 @@ class BookingCreate(BookingBase):
 class BookingGet(BaseModel):
   booking_date: date = Field(..., description="Укажите дату в формате YYYY-MM-DD")
   room: Literal["Стандарт", "Премиум"] = Field(..., description="Выберите комнату")
-
-class BookingCancel(BaseModel):
-  booking_date: date = Field(..., description="Укажите дату отмены бронирования в формате YYYY-MM-DD")
-  room: Literal["Стандарт", "Премиум"] = Field(..., description="Выберите комнату для отмены бронирования")
-  slot: Literal["10-13", "14-17", "18-21"] = Field(..., description="Выберите слот")
-
+  
   @field_validator("booking_date")
+  @classmethod
   def validate_date_not_in_future(cls, v: date) -> date:
     if v < date.today():
       raise ValueError("Дата не может быть позже сегодняшнего дня")
+    return v
+  
+class BookingCancel(BaseModel):
+  booking_date: date = Field(..., description="Укажите дату отмены бронирования в формате YYYY-MM-DD")
+  room: Literal["Стандарт", "Премиум"] = Field(..., description="Выберите комнату")
+  slot: Literal["10-13", "14-17", "18-21"] = Field(..., description="Выберите слот")
+
+  @field_validator("booking_date")
+  @classmethod
+  def validate_date_not_in_past(cls, v: date) -> date:
+    if v < date.today():
+      raise ValueError("Дата не может быть позже сегодняшнего дня")
+    return v
+
+  @field_validator("slot")
+  @classmethod
+  def validate_slot_not_in_past(cls, v: str, info: ValidationInfo) -> str:
+    booking_date = info.data.get("booking_date")
+    if booking_date is None:
+      return v
+    elif booking_date > date.today():
+      return v
+    if int(v[:2]) <= datetime.now().hour:
+      raise ValueError("Отмена бронирования невозможно после начала слота")
     return v
   
 class Token(BaseModel):

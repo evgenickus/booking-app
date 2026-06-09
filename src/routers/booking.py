@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List, Annotated
 from .. database.schemas import UserBase, BookingBase, BookingGet, BookingCancel
-from .. crud import get_room_by_name, create_booking, get_bookings_by_date, get_bookings_by_params, get_bookings, get_my_bookings, cancel_booking
+from .. crud import get_room_by_name, create_booking, get_bookings_by_date, get_bookings_by_params, get_bookings, get_my_bookings, cancel_booking_admin, get_bookings_for_admin
 from .. dependencies import get_db
 from .. routers.auth import get_current_user
 
@@ -22,7 +22,7 @@ def add_booking(
   room_db = get_room_by_name(db, booking.room)
   bookings_db = get_bookings_by_date(db, booking, room_id=room_db.room_id)
   free_slots = get_free_slots(bookings_db)
-
+  print(current_user.user_id)
   if booking.slot not in free_slots:
     raise HTTPException(status_code=409, detail=f"Этот слот занят")
   return create_booking(db, booking, user_id=current_user.user_id, room_id=room_db.room_id)
@@ -31,7 +31,7 @@ def add_booking(
 def read_bookings(db: Session = Depends(get_db)):
   bookings_db = get_bookings(db)
   if bookings_db == []:
-    raise HTTPException(status_code=409, detail=f"Резервирований нет")
+    raise HTTPException(status_code=409, detail=f"Бронирований нет")
   return bookings_db
 
 @router.get("/", response_model=None)
@@ -53,29 +53,20 @@ def read_my_bookings(
 ) -> List:
   bookings_db = get_my_bookings(db, user_id=current_user.user_id)
   if bookings_db == []:
-    raise HTTPException(status_code=409, detail=f"У вас нет резервирований")
+    raise HTTPException(status_code=409, detail=f"У вас нет бронирований")
   return bookings_db
 
 @router.put("/", response_model=None)
-def cancel_my_booking(
+def cancel_booking(
   booking: Annotated[BookingCancel, Query()],
   current_user: Annotated[UserBase, Depends(get_current_user)],
   db: Session = Depends(get_db)
 ):
   room_db = get_room_by_name(db, booking.room)
-  bookings_db = get_bookings_by_params(db, booking, room_id=room_db.room_id, user_id = current_user.user_id)
+  bookings_db = get_bookings_for_admin(db, booking, room_id=room_db.room_id)
   if bookings_db == []:
-    raise HTTPException(status_code=409, detail=f"Резервирование с такими параметрами не найдено")
-  return cancel_booking(db, booking, user_id=current_user.user_id, room_id=room_db.room_id)
-
-@router.put("/admin", response_model=None)
-def cancel_booking_for_admin(
-  booking: Annotated[BookingCancel, Query()],
-  current_user: Annotated[UserBase, Depends(get_current_user)],
-  db: Session = Depends(get_db)
-):
-  room_db = get_room_by_name(db, booking.room)
-  bookings_db = get_bookings_by_params(db, booking, room_id=room_db.room_id)
-  if bookings_db == []:
-    raise HTTPException(status_code=409, detail=f"Резервирование с такими параметрами не найдено")
-  return cancel_booking(db, booking, user_id=current_user.user_id, room_id=room_db.room_id)
+    raise HTTPException(status_code=409, detail=f"Бронирование с такими параметрами не найдено")
+  elif bookings_db[0]["user_id"] != current_user.user_id and current_user.admin == False:
+    raise HTTPException(status_code=409, detail=f"Отмена этого бронирования вам не доступно")
+  
+  return cancel_booking_admin(db, booking, user_id=bookings_db[0]["user_id"], room_id=room_db.room_id)

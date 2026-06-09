@@ -75,6 +75,21 @@ def get_bookings_by_params(db: Session, booking: schemas.BookingCancel, room_id,
   result = db.execute(bookings).all()
   return [row._asdict() for row in result]
 
+def get_bookings_for_admin(db: Session, booking: schemas.BookingCancel, room_id):
+  bookings = select(
+    models.Booking.slot,
+    models.Booking.booking_date,
+    models.Booking.status,
+    models.Booking.user_id,
+    models.Room.name
+  ).join(models.Room
+  ).where(models.Booking.booking_date == booking.booking_date
+  ).where(models.Booking.slot == booking.slot
+  ).where(models.Booking.room_id == room_id
+  ).where(models.Booking.status == "active")
+  result = db.execute(bookings).all()
+  return [row._asdict() for row in result]
+
 def get_my_bookings(db: Session, user_id):
   bookings = select(
     models.Booking.slot,
@@ -85,7 +100,7 @@ def get_my_bookings(db: Session, user_id):
   result = db.execute(bookings).all()
   return [row._asdict() for row in result]
 
-def cancel_booking(db: Session, booking: schemas.BookingCancel, user_id, room_id):
+def cancel_booking_admin(db: Session, booking: schemas.BookingCancel, user_id, room_id):
   update_booking = update(models.Booking
   ).where(models.Booking.booking_date == booking.booking_date
   ).where(models.Booking.slot == booking.slot

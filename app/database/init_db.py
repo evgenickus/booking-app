@@ -3,7 +3,18 @@ from . models import Room
 from . schemas import RoomBase
 from .. crud import create_room
 
-def init_database():
+def init_database() -> None:
+  """
+  В блоке try
+
+  Проверяется созданы ли комнаты в базе, если нет то вызывается
+  метод create_room и данные по комнатам добавляются базу
+  
+  В блоке finally
+
+  происходит закрытие бызы
+
+  """
   db = SessionLocal()
   try:
     if db.query(Room).first() is None:

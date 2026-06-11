@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from typing import Union, List, Literal
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
+from enum import Enum
 
 class UserBase(BaseModel):
   login: str
@@ -9,17 +10,18 @@ class UserBase(BaseModel):
 class UserCreate(BaseModel):
   login: str
   password: str
-  admin: Literal[False, True] = Field(..., description="Укажите является ли пользователь администратором")
+  admin: bool
+  # admin: Literal[False, True] = Field(..., description="Укажите является ли пользователь администратором")
   
-  @field_validator('admin', mode='before')
-  @classmethod
-  def coerce_admin(cls, v):
-    if isinstance(v, str):
-      if v.lower() == 'true':
-        return True
-      elif v.lower() == 'false':
-        return False
-    return v
+  # @field_validator('admin', mode='before')
+  # @classmethod
+  # def coerce_admin(cls, v):
+  #   if isinstance(v, str):
+  #     if v.lower() == 'true':
+  #       return True
+  #     elif v.lower() == 'false':
+  #       return False
+  #   return v
 
 class RoomBase(BaseModel):
   name: str
@@ -28,10 +30,15 @@ class RoomBase(BaseModel):
 class RoomCreate(RoomBase):
   room_id: int
 
+class Slots(str, Enum):
+  morning_slot = "10-13"
+  day_slot = "14-17"
+  evning_slot = "18-21"
+
 class BookingBase(BaseModel):
   booking_date: date = Field(..., description="Укажите дату бронирования в формате YYYY-MM-DD")
   room: Literal["Стандарт", "Премиум"] = Field(..., description="Выберите комнату")
-  slot: Literal["10-13", "14-17", "18-21"] = Field(..., description="Выберите слот")
+  slot: Slots = Field(..., description="Выберите слот")
   
   @field_validator("booking_date")
   @classmethod
@@ -74,7 +81,7 @@ class BookingGet(BaseModel):
 class BookingCancel(BaseModel):
   booking_date: date = Field(..., description="Укажите дату отмены бронирования в формате YYYY-MM-DD")
   room: Literal["Стандарт", "Премиум"] = Field(..., description="Выберите комнату")
-  slot: Literal["10-13", "14-17", "18-21"] = Field(..., description="Выберите слот")
+  slot: Slots = Field(..., description="Выберите слот")
 
   @field_validator("booking_date")
   @classmethod

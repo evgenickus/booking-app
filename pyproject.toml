@@ -16,6 +16,9 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 pyjwt = "^2.13.0"
 python-multipart = "^0.0.32"
 psycopg2-binary = "^2.9.12"
+pytest = "^9.0.3"
+httpx = "^0.28.1"
+httpx2 = "^2.3.0"
 
 
 [build-system]

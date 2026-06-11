@@ -17,8 +17,9 @@ def get_users(db: Session):
   return db.scalars(users).all()
 
 def get_user_by_login(db: Session, login: str):
-  user = select(models.User).where(models.User.login == login)
-  return db.scalar(user)
+  # user = select(models.User).where(models.User.login == login)
+  # return db.scalar(user)
+  return db.query(models.User).filter(models.User.login == login).first()
 
 #rooms
 def create_room(db: Session, room: schemas.RoomCreate):

@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, Body
 from sqlalchemy.orm import Session
 from typing import List, Annotated
-from .. database.schemas import UserBase, BookingBase, BookingGet, BookingCancel
-from .. crud import get_room_by_name, create_booking, get_bookings_by_date, get_bookings_by_params, get_bookings, get_my_bookings, cancel_booking_admin, get_bookings_for_admin
-from .. dependencies import get_db
-from .. routers.auth import get_current_user
 from datetime import datetime, date
+from .. database.schemas import UserBase, BookingBase, BookingGet, BookingCancel
+from .. crud import get_room_by_name, create_booking, get_bookings_by_date, get_bookings, get_my_bookings, cancel_booking_admin, get_bookings_for_admin
+from .. dependencies import get_db
+from .. routers.auth import get_current_user, get_current_admin_user
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ def get_free_slots(bookings, booking_date):
     return free_slots_correct
   return free_slots
     
-@router.post("/",
+@router.post("/add",
   response_model=BookingBase,
   description=
     """
@@ -41,13 +41,17 @@ def add_booking(
   return create_booking(db, booking, user_id=current_user.user_id, room_id=room_db.room_id)
 
 @router.get("/all", response_model=None)
-def read_bookings(db: Session = Depends(get_db)):
+def read_bookings(
+  user = Depends(get_current_admin_user),
+  db: Session = Depends(get_db)
+):
   bookings_db = get_bookings(db)
   if bookings_db == []:
-    raise HTTPException(status_code=409, detail=f"Бронирований нет")
+    # raise HTTPException(status_code=409, detail=f"Бронирований нет")
+    return {"message": "Бронирования отсутствуют"}
   return bookings_db
 
-@router.get("/", response_model=None)
+@router.get("/free", response_model=None)
 def check_free_slots(
   booking: Annotated[BookingGet, Query()],
   db: Session = Depends(get_db)
@@ -56,10 +60,11 @@ def check_free_slots(
   bookings_db = get_bookings_by_date(db, booking, room_id=room_db.room_id)
   free_slots = get_free_slots(bookings_db, booking.booking_date)
   if free_slots == []:
-    raise HTTPException(status_code=409, detail=f"На выбранную дату слотов нет")
+    # raise HTTPException(status_code=409, detail=f"На выбранную дату слотов нет")
+    return {"message": f"Свободных слотов на {booking.booking_date } нет"}
   return free_slots
 
-@router.get("/my_bookings", response_model=None)
+@router.get("/my", response_model=None)
 def read_my_bookings(
   current_user: Annotated[UserBase, Depends(get_current_user)],
   db: Session = Depends(get_db)
@@ -69,7 +74,7 @@ def read_my_bookings(
     raise HTTPException(status_code=409, detail=f"У вас нет бронирований")
   return bookings_db
 
-@router.put("/",
+@router.put("/cancel",
   response_model=None,
   description=
     """

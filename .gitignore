@@ -1,7 +1,9 @@
 .venv/
+.vscode
 __pycache__/
 .pytest_cache/
 src/__pycache__/
 src/database/__pycache__/
 src/routers/__pycache__/
 tests/__pycache__/
+*.db

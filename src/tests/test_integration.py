@@ -6,12 +6,18 @@ from sqlalchemy_utils import database_exists, create_database
 from app.dependencies import get_db
 from app.database.database import Base
 from app.main import app
+import os
 
 
 # Адрес для тестовой базы данных
-DATABASE_URL = "postgresql+psycopg2://postgres:123@localhost/test_bd"
+# DATABASE_URL = "postgresql+psycopg2://postgres:123@localhost/test_db"
 
-engine_test = create_engine(DATABASE_URL, echo=True)
+try:
+  DATABASE_URL = os.getenv("DATABASE_URL")
+  engine_test = create_engine(DATABASE_URL, echo=True)
+except:
+  print("db not found")
+  engine_test = create_engine("sqlite+pysqlite:///./test_db.db", echo=True)
 
 # Проверка если тестовая база данных не создана, то создаем
 if not database_exists(engine_test.url):
@@ -46,7 +52,7 @@ def test_create_user(client):
     """
       Тестирует endpoint для создания пользователя в тестовой базе
     """
-    response = client.post("/users/", json={"login": "Evgenich", "password": "pass001", "admin": False})
+    response = client.post("/users/add", json={"login": "Evgenich", "password": "pass001", "admin": False})
     assert response.status_code == 200
     data = response.json()
     assert data["login"] == "Evgenich"

@@ -26,13 +26,13 @@ class Booking(Base):
   __tablename__= "booking"
   booking_id: Mapped[int] = mapped_column(primary_key=True)
   created_at: Mapped[datetime] = mapped_column(
-    DateTime(timezone=True), 
-    server_default=func.now()
+    DateTime(timezone=True),
+    server_default=func.now(), 
   )
   updated_at: Mapped[datetime] = mapped_column(
     DateTime(timezone=True), 
     server_default=func.now(), 
-    onupdate=func.now()
+    onupdate=func.func.now()
   )
   user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"))
   room_id: Mapped[int] = mapped_column(ForeignKey("room.room_id"))

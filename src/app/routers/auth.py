@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from .. utility import verify_password
 from .. dependencies import get_db
 from .. import crud
-from .. database import schemas
+from .. database.schemas import UserBase, TokenData, Token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 router = APIRouter()
@@ -48,13 +48,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     login: int = payload.get("sub")
     if login is None:
       raise credentials_exception
-    token_data = schemas.TokenData(login=login)
+    token_data = TokenData(login=login)
   except jwt.exceptions.InvalidTokenError:
     raise credentials_exception
   user = crud.get_user_by_login(db, login=token_data.login)
   if user is None:
     raise credentials_exception
   return user
+
+async def get_current_admin_user(
+  current_user: UserBase = Depends(get_current_user)
+):
+  if not current_user.admin:
+    raise HTTPException(status_code=403, detail="Доступ только для администратора")
+  return current_user
 
 async def verify_token(token: str = Depends(oauth2_scheme)):
   try:
@@ -76,7 +83,7 @@ async def verify_user_by_token(token: str):
 async def login_for_access_token(
   form_data: OAuth2PasswordRequestForm = Depends(),
   db: Session = Depends(get_db)
-  ) -> schemas.Token:
+  ) -> Token:
   user = authenticate_user(form_data.username, form_data.password, db)
   if not user:
     raise HTTPException(
@@ -88,4 +95,4 @@ async def login_for_access_token(
   access_token = create_access_token(
     data={"sub": user.login}, expires_delta=access_token_expires
   )
-  return schemas.Token(access_token=access_token, token_type="bearer")
+  return Token(access_token=access_token, token_type="bearer")

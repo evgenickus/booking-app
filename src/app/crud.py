@@ -17,8 +17,6 @@ def get_users(db: Session):
   return db.scalars(users).all()
 
 def get_user_by_login(db: Session, login: str):
-  # user = select(models.User).where(models.User.login == login)
-  # return db.scalar(user)
   return db.query(models.User).filter(models.User.login == login).first()
 
 #rooms
@@ -45,8 +43,20 @@ def create_booking(db: Session, booking: schemas.BookingCreate, user_id, room_id
   return schemas.BookingBase(booking_date=new_booking.booking_date, room=booking.room, slot=new_booking.slot)
 
 def get_bookings(db: Session):
-  bookings = select(models.Booking)
-  return db.scalars(bookings).all()
+  bookings = select(
+  models.Booking.booking_id,
+  models.Booking.created_at,
+  models.Booking.updated_at,
+  models.Room.name,
+  models.User.login,
+  models.Booking.booking_date,
+  models.Booking.slot,
+  models.Booking.status,
+  ).join(models.Room
+  ).join(models.User)
+
+  result = db.execute(bookings).all()
+  return [row._asdict() for row in result]
 
 def get_bookings_by_date(db: Session, booking: schemas.BookingGet, room_id):
   bookings = select(

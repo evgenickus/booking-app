@@ -7,7 +7,7 @@ from .. dependencies import get_db
 
 router = APIRouter()
 
-@router.post("/",
+@router.post("/add",
   response_model=UserBase,
   description=
     """
@@ -28,6 +28,6 @@ def add_user(
     raise HTTPException(status_code=409, detail=f"Пользователь с логином: {user.login} уже имеется")
   return create_user(db, user)
 
-@router.get("/", response_model=List[UserBase])
+@router.get("/all", response_model=List[UserBase])
 def read_users(db: Session = Depends(get_db)):
   return get_users(db)

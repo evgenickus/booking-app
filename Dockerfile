@@ -12,8 +12,6 @@ ENV POETRY_VERSION=2.0.0 \
     POETRY_NO_INTERACTION=1
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
-# ENV PATH="$POETRY_HOME/bin:$PATH"
-
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
@@ -25,3 +23,8 @@ RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction --no-root
 
 COPY ./src/ .
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

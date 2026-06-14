@@ -9,12 +9,9 @@ from app.main import app
 import os
 
 
-# Адрес для тестовой базы данных
-# DATABASE_URL = "postgresql+psycopg2://postgres:123@localhost/test_db"
-
 try:
-  DATABASE_URL = os.getenv("DATABASE_URL")
-  engine_test = create_engine(DATABASE_URL, echo=True)
+  DATABASE_URL_TEST = os.getenv("DATABASE_URL_TEST")
+  engine_test = create_engine(DATABASE_URL_TEST, echo=True)
 except:
   print("db not found")
   engine_test = create_engine("sqlite+pysqlite:///./test_db.db", echo=True)

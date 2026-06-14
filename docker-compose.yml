@@ -1,17 +1,16 @@
 services:
   backend:
-    build:
-      dockerfile: Dockerfile
-
+    build: .
     container_name: backend-container
     ports:
       - 8888:8000
     environment:
-      - DATABASE_URL=postgresql+psycopg2://user:password@db/test_database
-    command: "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-    
+      - DATABASE_URL=postgresql+psycopg2://user:password@db/booking
+      - DATABASE_URL_TEST=postgresql+psycopg2://user:password@db/test_db
+    command: ["tests"]
     depends_on:
       - db
+
   db:
     image: postgres:12.1-alpine
     container_name: database-container
@@ -20,7 +19,7 @@ services:
     environment:
      - POSTGRES_USER=user
      - POSTGRES_PASSWORD=password
-     - POSTGRES_DB=test_database
+     - POSTGRES_DB=booking
 
 volumes:
   postgres_data:

@@ -1,20 +1,19 @@
 FROM python:3.12-alpine
 
 RUN apk add --no-cache \
-    curl \
-    gcc \
-    musl-dev \
-    libffi-dev
+  curl \
+  gcc \
+  musl-dev \
+  libffi-dev
 
-ENV POETRY_VERSION=2.0.0 \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1
+ENV POETRY_HOME="/opt/poetry" \
+  POETRY_VIRTUALENVS_IN_PROJECT=true \
+  POETRY_NO_INTERACTION=1
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
-
+  
 WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./

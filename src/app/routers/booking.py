@@ -47,7 +47,6 @@ def read_bookings(
 ):
   bookings_db = get_bookings(db)
   if bookings_db == []:
-    # raise HTTPException(status_code=409, detail=f"Бронирований нет")
     return {"message": "Бронирования отсутствуют"}
   return bookings_db
 
@@ -60,7 +59,6 @@ def check_free_slots(
   bookings_db = get_bookings_by_date(db, booking, room_id=room_db.room_id)
   free_slots = get_free_slots(bookings_db, booking.booking_date)
   if free_slots == []:
-    # raise HTTPException(status_code=409, detail=f"На выбранную дату слотов нет")
     return {"message": f"Свободных слотов на {booking.booking_date } нет"}
   return free_slots
 

@@ -11,18 +11,7 @@ class UserCreate(BaseModel):
   login: str
   password: str
   admin: bool
-  # admin: Literal[False, True] = Field(..., description="Укажите является ли пользователь администратором")
   
-  # @field_validator('admin', mode='before')
-  # @classmethod
-  # def coerce_admin(cls, v):
-  #   if isinstance(v, str):
-  #     if v.lower() == 'true':
-  #       return True
-  #     elif v.lower() == 'false':
-  #       return False
-  #   return v
-
 class RoomBase(BaseModel):
   name: str
   description: str

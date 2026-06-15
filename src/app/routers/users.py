@@ -18,12 +18,10 @@ router = APIRouter()
     """
 )
 def add_user(
-  # user: Annotated[UserCreate, Query()],
   user: UserCreate,
   db: Session = Depends(get_db)
 ) -> UserBase:
   db_user = get_user_by_login(db, user.login)
-  # print(db_user)
   if db_user:
     raise HTTPException(status_code=409, detail=f"Пользователь с логином: {user.login} уже имеется")
   return create_user(db, user)

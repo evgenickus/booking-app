@@ -3,10 +3,6 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import os
 
-# DATABASE_URL = "postgresql+psycopg2://postgres:123@localhost/booking"
-# DATABASE_URL = os.getenv("DATABASE_URL")
-
-# engine = create_engine(DATABASE_URL, echo=True)
 try:
   DATABASE_URL = os.getenv("DATABASE_URL")
   engine = create_engine(DATABASE_URL, echo=True)
